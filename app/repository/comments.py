@@ -1,4 +1,6 @@
-from sqlalchemy import delete
+from typing import Optional, Any
+
+from sqlalchemy import delete, Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Comment
@@ -20,3 +22,14 @@ async def delete_comment(comment_id: int, db: AsyncSession):
     )
     await db.commit()
     return {'message': f'Comment {comment_id} has been deleted'}
+
+
+async def get_comment_by_id(comment_id: int, db: AsyncSession) -> Optional[Comment]:
+    """
+    Get a comment by its ID.
+    """
+    comment = await db.execute(
+        Comment.select()
+        .where(Comment.id == comment_id)
+    )
+    return comment.scalar_one_or_none()
