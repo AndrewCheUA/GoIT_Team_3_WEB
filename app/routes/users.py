@@ -88,3 +88,12 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
     password = auth_service.get_password_hash(body.new_password)
 
     return await repository_users.update_password(current_user.id, password, db)
+
+
+@router.post("/change-role", dependencies=[Depends(auth_service.get_admin_user)])
+async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
+    user = await repository_users.get_user_by_id(user_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    await repository_users.update_user(user_id, db)
+    return {'message': 'User role updated successfully.'}
