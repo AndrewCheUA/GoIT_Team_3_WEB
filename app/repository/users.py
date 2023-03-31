@@ -171,7 +171,7 @@ async def confirmed_email(user: User, db: AsyncSession) -> None:
     await db.commit()
 
 
-async def update_user(user_id: int, db: AsyncSession):
+async def user_update_role(user_id: int, db: AsyncSession):
     """
     The update_user function updates the role of a user in the database.
 

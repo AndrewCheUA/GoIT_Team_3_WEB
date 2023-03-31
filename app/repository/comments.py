@@ -32,4 +32,4 @@ async def get_comment_by_id(comment_id: int, db: AsyncSession) -> Optional[Comme
         Comment.select()
         .where(Comment.id == comment_id)
     )
-    return comment.scalar_one_or_none()
+    return comment

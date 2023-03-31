@@ -106,5 +106,5 @@ async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await repository_users.get_user_by_id(user_id, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    await repository_users.update_user(user_id, db)
+    await repository_users.user_update_role(user_id, db)
     return {'message': 'User role updated successfully.'}
