@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connect import get_db
@@ -20,9 +20,9 @@ async def delete_comment(
     Delete a comment by ID.
     """
     if current_user not in [UserRole.admin, UserRole.moderator]:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     comment = await repository_comments.get_comment_by_id(comment_id, db)
     if not comment:
-        raise HTTPException(status_code=404, detail="Comment not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
     await repository_comments.delete_comment(comment, db)
     return {"message": "Comment deleted successfully"}
