@@ -90,7 +90,7 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
     return await repository_users.update_password(current_user.id, password, db)
 
 
-@router.post("/change-role", dependencies=[Depends(UserRole.admin)])
+@router.post("/change-role", dependencies=[Depends(auth_service.get_current_user), Depends(UserRole.admin)])
 async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     """
     The change_user_role function changes the role of a user.
