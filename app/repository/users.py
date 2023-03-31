@@ -187,5 +187,5 @@ async def update_user(user_id: int, db: AsyncSession):
         user.role = 'moderator'
         await db.commit()
         await db.refresh(user)
-        return {'message': f'User {user_id} role changed to moderator'}
-    return {'message': f'User {user_id} not found'}
+        return user
+    return user
