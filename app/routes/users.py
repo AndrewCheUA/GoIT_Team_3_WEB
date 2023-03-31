@@ -5,7 +5,7 @@ from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connect import get_db
-from app.database.models import User
+from app.database.models import User, UserRole
 from app.repository import users as repository_users
 from app.models.user import (
     UserPublic,
@@ -90,7 +90,7 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
     return await repository_users.update_password(current_user.id, password, db)
 
 
-@router.post("/change-role", dependencies=[Depends(auth_service.get_admin_user)])
+@router.post("/change-role", dependencies=[Depends(UserRole.admin)])
 async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     """
     The change_user_role function changes the role of a user.
