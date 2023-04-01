@@ -5,7 +5,7 @@ from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connect import get_db
-from app.database.models import User
+from app.database.models import User, UserRole
 from app.repository import users as repository_users
 from app.schemas.user import (
     UserPublic,
@@ -14,7 +14,7 @@ from app.schemas.user import (
 )
 from app.services import cloudinary
 from app.services.auth import auth_service
-
+from app.utils.filter import UserRoleFilter
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -92,3 +92,23 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
     password = auth_service.get_password_hash(body.new_password)
 
     return await repository_users.update_password(current_user.id, password, db)
+
+
+@router.post("/change-role",
+             dependencies=[Depends(auth_service.get_current_user), Depends(UserRoleFilter(role=UserRole.admin))])
+async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    The change_user_role function changes the role of a user.
+    Args:
+        user_id (int): The id of the user to change.
+        db (AsyncSession, optional): An open database session. Defaults to Depends(get_db).
+    :param user_id: int: Specify the user id of the user to be deleted
+    :param db: AsyncSession: Pass the database connection to the function
+    :return: A dictionary with the message key and a string value
+    :doc-author: Trelent
+    """
+    user = await repository_users.get_user_by_id(user_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    await repository_users.user_update_role(user_id, db)
+    return {'message': 'User role updated successfully.'}

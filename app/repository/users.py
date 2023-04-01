@@ -169,3 +169,22 @@ async def confirmed_email(user: User, db: AsyncSession) -> None:
     """
     user.email_verified = True
     await db.commit()
+
+
+async def user_update_role(user_id: int, db: AsyncSession):
+    """
+    The update_user function updates the role of a user in the database.
+    :param user_id: int: Specify the user id to update
+    :param db: AsyncSession: Pass the database session to the function
+    :return: A dictionary with a message key
+    """
+    user = await db.scalar(
+        update(User)
+        .filter(User.id == user_id)
+    )
+    if user:
+        user.role = 'moderator'
+        await db.commit()
+        await db.refresh(user)
+        return user
+    return user

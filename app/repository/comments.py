@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import or_, update, delete, and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ async def create_comment(user: User, body: CommentBase, db: AsyncSession) -> Com
     :return: A comment object
     """
     comment = Comment(
-            user_id=body.user_id,
+            user_id=user.id,
             image_id=body.image_id,
             data=body.data
         )
@@ -84,7 +84,6 @@ async def update_comment(user: User, comment_id: int, body: CommentUpdate, db: A
 
     """
     The update_comment function updates a comment in the database.
-
     :param user: User: Ensure that the user making the request is authenticated
     :param comment_id: int: Identify the comment to be updated
     :param body: CommentUpdate: Pass the updated comment data to the function
@@ -102,4 +101,33 @@ async def update_comment(user: User, comment_id: int, body: CommentUpdate, db: A
 
     await db.refresh(comment)
 
+    return comment
+
+
+async def delete_comment(comment_id: int, db: AsyncSession):
+    """
+    The delete_comment function deletes a comment with a given id from the database.
+    Args:
+        comment_id (int): The id of the comment to be deleted.
+        db (AsyncSession): An open database session.
+    Returns:
+        None.
+    :doc-author: Trelent
+    """
+    comment = await db.execute(
+        delete(Comment)
+        .where(Comment.id == comment_id)
+    )
+    await db.commit()
+    return comment
+
+
+async def get_comment_by_id(comment_id: int, db: AsyncSession) -> Optional[Comment]:
+    """
+    Get a comment by its ID.
+    """
+    comment = await db.scalar(
+        select(Comment)
+        .filter(Comment.id == comment_id)
+    )
     return comment

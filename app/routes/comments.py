@@ -13,15 +13,13 @@ from app.repository import comments as repository_comments
 from app.utils.filter import UserRoleFilter
 from app.services.auth import auth_service
 
-
 router = APIRouter(prefix='/users/comments', tags=["comments"])
 
 
 @router.post("/", response_model=CommentResponse,
-             dependencies=[Depends(UserRoleFilter(role=UserRole.moderator))])
+             dependencies=[Depends(UserRoleFilter(role=UserRole.user))])
 async def create_comment(body: CommentBase, db: AsyncSession = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)) -> Comment:
-
     """
     The create_comment function creates a new comment in the database.
         The function takes in a CommentBase object, which is used to create the new comment.
@@ -36,7 +34,7 @@ async def create_comment(body: CommentBase, db: AsyncSession = Depends(get_db),
     try:
         comment = await repository_comments.create_comment(current_user, body, db)
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail = "Failed to create a comment")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to create a comment")
 
     return comment
 
@@ -48,7 +46,6 @@ async def get_comments_by_image_user_id(image_id: int | None = None,
                                         skip: int = 0,
                                         limit: int = 10, db: AsyncSession = Depends(get_db),
                                         current_user: User = Depends(auth_service.get_current_user)) -> List[Comment]:
-
     """
     The get_comments_by_image_user_id function returns a list of comments that match the image_id and user_id parameters.
         The function takes in an optional image_id, user_id, skip, limit and db parameter.
@@ -72,7 +69,6 @@ async def get_comments_by_image_user_id(image_id: int | None = None,
             dependencies=[Depends(UserRoleFilter(role=UserRole.moderator))])
 async def get_comment(comment_id: int, db: AsyncSession = Depends(get_db),
                       current_user: User = Depends(auth_service.get_current_user)) -> Comment:
-
     """
     The get_comment function returns a comment by its id.
 
@@ -90,14 +86,13 @@ async def get_comment(comment_id: int, db: AsyncSession = Depends(get_db),
 
 
 @router.patch("/{comment_id}", response_model=CommentResponse,
-              dependencies=[Depends(UserRoleFilter(role=UserRole.moderator))])
+              dependencies=[Depends(UserRoleFilter(role=UserRole.user))])
 async def update_comment(comment_id: int, body: CommentUpdate, db: AsyncSession = Depends(get_db),
                          current_user: User = Depends(auth_service.get_current_user)) -> Comment:
     """
     The update_comment function updates a comment in the database.
         The function takes an id of the comment to be updated, and a CommentUpdate object containing
         the new values for each field.
-
     :param comment_id: int: Identify the comment to be deleted
     :param body: CommentUpdate: Pass the new comment body to the function
     :param db: AsyncSession: Pass the database session to the function
@@ -110,3 +105,22 @@ async def update_comment(comment_id: int, body: CommentUpdate, db: AsyncSession 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
 
     return comment
+
+
+@router.delete("/{comment_id}",
+               dependencies=[Depends(UserRoleFilter(role=UserRole.moderator))])
+async def delete_comment(
+        comment_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: UserRole = Depends(auth_service.get_current_user),
+) -> dict:
+    """
+    Delete a comment by ID.
+    """
+    # if current_user not in [UserRole.admin, UserRole.moderator]:
+    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    comment = await repository_comments.get_comment_by_id(comment_id, db)
+    if not comment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
+    await repository_comments.delete_comment(comment.id, db)
+    return {"message": "Comment deleted successfully"}
