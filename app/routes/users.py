@@ -15,7 +15,6 @@ from app.models.user import (
 from app.services import cloudinary
 from app.services.auth import auth_service
 
-
 router = APIRouter(prefix="/users", tags=["users"])
 
 
@@ -108,3 +107,25 @@ async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     await repository_users.user_update_role(user_id, db)
     return {'message': 'User role updated successfully.'}
+
+
+@router.post("/users/ban/{user_id}")
+async def ban_user(user_id: int, db: AsyncSession = Depends(get_db),
+                   current_user: UserRole = Depends(auth_service.get_current_user)):
+    """
+    The ban_user function is used to ban a user.
+
+    :param user_id: int: Specify the user id of the user to be banned
+    :param db: AsyncSession: Pass the database session to the function
+    :param current_user: UserRole: Get the current user's role
+    :return: A dictionary with a message, which is not the right way to return data
+    :doc-author: Trelent
+    """
+    if current_user != UserRole.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    user = await repository_users.get_user_by_id(user_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user.is_active = False
+    await db.commit()
+    return {"message": f"User {user.username} banned successfully"}
