@@ -4,7 +4,7 @@ from sqlalchemy import select, update, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import User
+from app.database.models import User, UserRole
 from app.schemas.user import UserCreate
 from app.services.gravatar import get_gravatar
 
@@ -171,20 +171,22 @@ async def confirmed_email(user: User, db: AsyncSession) -> None:
     await db.commit()
 
 
-async def user_update_role(user_id: int, db: AsyncSession):
+async def user_update_role(user_id: int, role: UserRole, db: AsyncSession) -> User:
     """
     The update_user function updates the role of a user in the database.
     :param user_id: int: Specify the user id to update
     :param db: AsyncSession: Pass the database session to the function
     :return: A dictionary with a message key
     """
-    user = await db.scalar(
-        update(User)
-        .filter(User.id == user_id)
-    )
-    if user:
-        user.role = 'moderator'
-        await db.commit()
-        await db.refresh(user)
-        return user
+    try:
+        async with db.begin():
+            user = await db.scalar(
+                update(User)
+                .values(role=role)
+                .filter(User.id == user_id)
+                .returning(User)
+            )
+            await db.commit()
+    except IntegrityError as e:
+        return
     return user

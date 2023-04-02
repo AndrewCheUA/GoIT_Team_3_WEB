@@ -114,12 +114,11 @@ async def delete_comment(comment_id: int, db: AsyncSession):
         None.
     :doc-author: Trelent
     """
-    comment = await db.execute(
+    await db.execute(
         delete(Comment)
         .where(Comment.id == comment_id)
     )
     await db.commit()
-    return comment
 
 
 async def get_comment_by_id(comment_id: int, db: AsyncSession) -> Optional[Comment]:

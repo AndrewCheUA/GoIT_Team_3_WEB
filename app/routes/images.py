@@ -46,8 +46,8 @@ async def upload_image(file: UploadFile = File(), description: str = Form(min_le
 
 
 
-@router.get("/", response_model=ImageGetResponse, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
-async def dowload_image(file_id: str, current_user: User = Depends(auth_service.get_current_user)):
+@router.get("/", dependencies=[Depends(RateLimiter(times=10, seconds=60))])
+async def get_image(file_id: str, current_user: User = Depends(auth_service.get_current_user)):
     """
     The dowload_image function dowloads the image from Cloudinary.
 
