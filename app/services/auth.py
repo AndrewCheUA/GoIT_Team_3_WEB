@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.connect import get_db
 from app.repository import users as repository_users
-from app.database.models import User
+from app.database.models import User, UserRole
 from config import settings
 
 
@@ -216,3 +216,26 @@ class Auth:
 
 
 auth_service = Auth()
+
+
+def role_required(role: UserRole):
+    """
+    The role_required function is a decorator that checks if the user has the required role.
+    If not, it raises an HTTPException with status code 403 (Forbidden).
+
+
+    :param role: UserRole: Specify the role that is required to access a route
+    :return: A function that can be used as a dependency in any endpoint
+    :doc-author: Trelent
+    """
+    async def _role_required(current_user: User = Depends(auth_service.get_current_user)):
+        if current_user.role != role:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+        return current_user
+    return _role_required
+
+
+async def is_admin_or_moderator(current_user: User = Depends(auth_service.get_current_user)):
+    if not current_user.is_admin and not current_user.is_moderator:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    return current_user
