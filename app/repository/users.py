@@ -1,11 +1,11 @@
 from typing import Optional
 
-from sqlalchemy import select, update, or_
+from sqlalchemy import select, update, or_, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import User
-from app.schemas.user import UserCreate
+from app.database.models import User, Image
+from app.schemas.user import UserCreate, ProfileUpdate, PartialProfileUpdate
 from app.services.gravatar import get_gravatar
 
 
@@ -58,6 +58,21 @@ async def get_user_by_email_or_username(email: str, username: str, db: AsyncSess
         select(User)
         .filter(or_(User.email == email, User.username == username))
     )
+
+
+async def get_user_by_username(db: AsyncSession, username: str) -> User:
+
+    """
+    The get_user_by_username function returns a user object from the database based on the username.
+
+    :param db: AsyncSession: Pass in the database session
+    :param username: str: Filter the query
+    :return: A user object
+    """
+    return await db.scalar(
+                select(User)
+                .filter(User.username == username)
+            )
 
 
 async def get_user_by_id(user_id: int, db: AsyncSession) -> Optional[User]:
@@ -169,3 +184,68 @@ async def confirmed_email(user: User, db: AsyncSession) -> None:
     """
     user.email_verified = True
     await db.commit()
+
+
+async def get_num_photos_by_user(user_id: int, db: AsyncSession) -> int:
+    """
+    The get_num_photos_by_user function returns the number of photos a user has uploaded to the database.
+
+    :param user_id: int: Specify the user_id of the user whose photos we want to count
+    :param db: AsyncSession: Pass the database connection to the function
+    :return: The number of photos a user has
+    """
+    num_photos = await db.scalar(
+        select(func.count(Image.id))
+        .filter(Image.user_id == user_id)
+    )
+    print(f"repository: {num_photos=}")
+    return num_photos
+
+
+async def update_user_profile(body: ProfileUpdate, user_id: int, db: AsyncSession) -> User:
+    """
+    The update_user_profile function updates a user's profile information.
+
+    :param body: ProfileUpdate: Get the data from the request body
+    :param user_id: int: Identify the user to update
+    :param db: AsyncSession: Pass in the database session
+    :return: A user object
+    """
+    user = await db.scalar(
+        update(User)
+        .where(User.id == user_id)
+        .values(**body.dict())
+        .returning(User)
+    )
+
+    await db.commit()
+
+    await db.refresh(user)
+
+    return user
+
+
+async def partial_update_user_profile(body: PartialProfileUpdate, user_id: int, db: AsyncSession) -> User:
+
+    """
+    The update_user_profile_partial function updates a user's profile information.
+
+    :param body: PartialProfileUpdate: Specify the data that is being passed in
+    :param user_id: int: Identify the user to update
+    :param db: AsyncSession: Pass the database session to the function
+    :return: The user object, which is the updated version of the user
+    """
+    update_data = {key: value for key, value in body.dict().items() if value != "string"}
+
+    user = await db.scalar(
+        update(User)
+        .where(User.id == user_id)
+        .values(**update_data)
+        .returning(User)
+    )
+
+    await db.commit()
+
+    await db.refresh(user)
+
+    return user

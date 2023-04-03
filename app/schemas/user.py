@@ -1,4 +1,5 @@
 from pydantic import EmailStr, constr, Field
+from typing import Optional
 
 from .core import DateTimeModelMixin, IDModelMixin, CoreModel
 
@@ -32,6 +33,28 @@ class UserCreate(CoreModel):
 class UserCreateResponse(CoreModel):
     user: UserPublic
     detail: str = "User successfully created"
+
+
+class UserProfile(UserPublic):
+    num_photos: int
+
+    class Config:
+        orm_mode = True
+
+
+class ProfileUpdate(CoreModel):
+    username: str
+    first_name: str
+    last_name: str
+
+
+class PartialProfileUpdate(CoreModel):
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 
 class TokenResponse(CoreModel):
