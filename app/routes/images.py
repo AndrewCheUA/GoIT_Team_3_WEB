@@ -46,8 +46,8 @@ async def upload_image(file: UploadFile = File(), description: str = Form(min_le
 
 
 
-@router.get("/", response_model=ImageGetResponse, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
-async def dowload_image(file_id: str, current_user: User = Depends(auth_service.get_current_user)):
+@router.get("/{image_identifier}", response_model=ImageGetResponse, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
+async def get_image(image_identifier: str, current_user: User = Depends(auth_service.get_current_user)):
     """
     The dowload_image function dowloads the image from Cloudinary.
 
@@ -56,7 +56,7 @@ async def dowload_image(file_id: str, current_user: User = Depends(auth_service.
     """
     if current_user:
         loop = asyncio.get_event_loop()
-        url = await loop.run_in_executor(None, cloudinary.get_format_image, file_id)
+        url = await loop.run_in_executor(None, cloudinary.get_format_image, image_identifier)
     if url is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Url does not exist")
 
