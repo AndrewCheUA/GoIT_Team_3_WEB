@@ -49,10 +49,10 @@ async def upload_image(file: UploadFile = File(), description: str = Form(min_le
 @router.get("/{image_identifier}", response_model=ImageGetResponse, dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def get_image(image_identifier: str, current_user: User = Depends(auth_service.get_current_user)):
     """
-    The dowload_image function dowloads the image from Cloudinary.
+    The get_image function gets the image's url from Cloudinary.
 
     :param file_id: str: Get the file_url to download
-    :return: image url
+    :return: image's url
     """
     if current_user:
         loop = asyncio.get_event_loop()
