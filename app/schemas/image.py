@@ -1,7 +1,5 @@
 from urllib.parse import urljoin
-
 from pydantic import Field, validator
-
 from config import settings
 from .core import CoreModel, IDModelMixin, DateTimeModelMixin
 
@@ -10,7 +8,7 @@ class ImageBase(CoreModel):
     """
     Leaving salt from base model
     """
-    url: str = Field(..., alias='uuid')
+    url: str = Field(..., alias='public_id')
     description: str
     user_id: str
 
@@ -30,12 +28,25 @@ class ImagePublic(DateTimeModelMixin, ImageBase, IDModelMixin):
 
 class ImageCreateResponse(CoreModel):
     image: ImagePublic
-    detail: str = "Image successfully created"
+    detail: str = "The Image was successfully created"
     class Config:
         orm_mode = True
 
 
 class ImageGetResponse(CoreModel):
-    detail: str = "Image successfully downloaded"
+    detail: str = "The Image was successfully got"
     class Config:
-        orm_mode = True          
+        orm_mode = True
+
+
+class ImageUpdateResponse(CoreModel):
+    image: ImagePublic
+    detail: str = "The Image was successfully updated"
+    class Config:
+        orm_mode = True  
+
+
+class ImageDeleteResponse(CoreModel):
+    detail: str = "The Image was successfully deleted"
+    class Config:
+        orm_mode = True           
