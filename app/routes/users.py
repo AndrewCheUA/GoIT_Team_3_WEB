@@ -151,3 +151,22 @@ async def update_user_profile(body: ProfileUpdate, db: AsyncSession = Depends(ge
         )
 
     return await repository_users.update_user_profile(current_user.id, body, db)
+
+
+@router.post("/change-role", dependencies=[Depends(auth_service.get_admin_user)])
+async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    The change_user_role function changes the role of a user.
+        Args:
+            user_id (int): The id of the user to change.
+            db (AsyncSession, optional): [description]. Defaults to Depends(get_db).
+
+    :param user_id: int: Get the user_id from the path
+    :param db: AsyncSession: Pass the database session to the function
+    :return: A dictionary with the updated user
+    :doc-author: Trelent
+    """
+    user = await repository_users.get_user_by_id(user_id, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return await repository_users.update_user(user_id, db)
