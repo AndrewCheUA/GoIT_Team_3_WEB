@@ -171,3 +171,23 @@ async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return await repository_users.user_update_role(user_id, db)
+
+
+@router.post("/users/{user_id}/role/", dependencies=[Depends(AuthService.get_current_user), Depends(UserRole.admin)])
+async def update_user_role(
+        user_id: int,
+        role: str,
+        db: AsyncSession = Depends(get_db),
+):
+    if role not in ['user', 'moderator']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role")
+    user = await db.query(User).get(user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if role == 'moderator':
+        user.role = 'moderator'
+    elif role == 'user':
+        user.role = 'user'
+    await db.commit()
+    await db.refresh(user)
+    return user
