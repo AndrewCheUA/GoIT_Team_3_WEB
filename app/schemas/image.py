@@ -31,3 +31,28 @@ class ImagePublic(DateTimeModelMixin, ImageBase, IDModelMixin):
 class ImageCreateResponse(CoreModel):
     image: ImagePublic
     detail: str = "Image successfully uploaded"
+
+
+class ImageGetResponse(CoreModel):
+    detail: str = "The Image was successfully got"
+    class Config:
+        orm_mode = True
+
+
+class ImageUpdateResponse(CoreModel):
+    image: ImagePublic
+    detail: str = "The Image was successfully updated"
+    class Config:
+        orm_mode = True  
+
+
+class ImageDeleteResponse(CoreModel):
+    detail: str = "The Image was successfully deleted"
+    class Config:
+        orm_mode = True        
+
+
+class ImageGetResponse(CoreModel):
+    detail: str = "The Image was successfully got"
+    class Config:
+        orm_mode = True    

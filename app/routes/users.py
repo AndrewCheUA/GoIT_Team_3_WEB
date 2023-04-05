@@ -101,7 +101,7 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
 @router.get("/{user_id}/profile", response_model = UserProfile,
             dependencies = [Depends(RateLimiter(times = 10, seconds = 60))])
 async def get_user_profile(user_id: int, db: AsyncSession = Depends(get_db),
-                           current_user: User = Depends(auth_service.get_current_user)) -> UserProfile:
+                           current_user: User = Depends(AuthService.get_current_user)) -> UserProfile:
     """
     The get_user_profile function is used to retrieve a user's profile information.
         It takes in the user_id of the desired profile and returns a UserPublic object containing all publically available
@@ -139,7 +139,7 @@ async def get_user_profile(user_id: int, db: AsyncSession = Depends(get_db),
 
 @router.put("/{user_id}/update", response_model=UserPublic)
 async def update_user_profile(body: ProfileUpdate, user_id: int, db: AsyncSession = Depends(get_db),
-                              current_user: User = Depends(auth_service.get_current_user)) -> UserPublic:
+                              current_user: User = Depends(AuthService.get_current_user)) -> UserPublic:
     """
     The update_user_profile function updates a user's profile.
 
@@ -165,7 +165,7 @@ async def partial_update_user_profile(user_id: int,
                                       first_name: str = None,
                                       last_name: str = None,
                                       db: AsyncSession = Depends(get_db),
-                                      current_user: User = Depends(auth_service.get_current_user)) -> UserPublic:
+                                      current_user: User = Depends(AuthService.get_current_user)) -> UserPublic:
     """
     The partial_update_user_profile function allows a user to update their username, first name, and/or last name.
 

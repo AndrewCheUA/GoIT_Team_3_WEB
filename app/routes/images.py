@@ -1,6 +1,6 @@
 import asyncio
-
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status, Query
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +10,9 @@ from app.repository import images as repository_images
 from app.schemas.image import (
     ImageCreateResponse,
     ImagePublic,
+    ImageUpdateResponse,
+    ImageDeleteResponse,
+    ImagePublic
 )
 from app.services import cloudinary
 from app.services.auth import AuthService
@@ -87,3 +90,28 @@ async def update_description(image_id: int, description: str = Form(min_length=1
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid identifier")
 
     return updated_image
+
+
+@router.get("/", response_model=list[ImagePublic], description="Get all images",
+            dependencies=[Depends(RateLimiter(times=10, seconds=60))])
+async def get_images(skip: int = 0, limit: int = Query(default=10, ge=1, le=100),
+                        description: Optional[str] = Query(default=None, min_length=10, max_length=1200),
+                        db: AsyncSession = Depends(get_db),
+                        current_user: User = Depends(AuthService.get_current_user)):
+    """
+    The get_images function is used to get images from the database.
+        It takes in a skip, limit, description as parameters.
+        The skip parameter is used to determine how many images should be skipped before returning results.
+        The limit parameter determines how many images should be returned after skipping the specified number of images.
+        The description parameters are optional strings that can be passed in to filter.
+        If no description are provided then all images will be returned regardless of their description.
+
+    :param skip: int: Skip the first n images
+    :param limit: int: Limit the number of results returned
+    :param description: Optional[str]: Filter the images by description
+    :param db: Session: Pass the database connection to the function
+    :return: A list of images
+    """
+    contact = await repository_images.get_images(skip, limit, description, db)
+
+    return contact

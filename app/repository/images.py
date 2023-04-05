@@ -70,3 +70,23 @@ async def update_description(user_id: int, public_id: str, description: str, db:
         return
 
     return image
+
+
+async def get_images(skip: int, limit: int, description: str, db: AsyncSession) -> list[Image]:
+    """
+    The get_images function returns a list of images for the user.
+
+    :param skip: int: Skip the first number of images
+    :param limit: int: Set the number of images to return
+    :param description: str: Filter the images by description
+    :param db: Session: Pass the database session to the function
+    :return: A list of image objects
+    """
+    query = select(Image)
+
+    if description:
+        query = query.filter(Image.description == description) 
+
+    image = await db.execute(query.offset(skip).limit(limit))
+
+    return image.scalars().all()
