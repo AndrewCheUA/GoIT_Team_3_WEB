@@ -101,7 +101,7 @@ async def update_password(body: UserPasswordUpdate, db: AsyncSession = Depends(g
 @router.get("/{user_id}", response_model=UserProfile,
             dependencies=[Depends(RateLimiter(times=10, seconds=60))])
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db),
-                           current_user: User = Depends(AuthService.get_current_user)) -> UserProfile:
+                   current_user: User = Depends(AuthService.get_current_user)) -> UserProfile:
     """
     The get_user_profile function is used to retrieve a user's profile information.
         It takes in the user_id of the desired profile and returns a UserPublic object containing all publically available
@@ -153,7 +153,8 @@ async def update_user_profile(body: ProfileUpdate, db: AsyncSession = Depends(ge
     return await repository_users.update_user_profile(current_user.id, body, db)
 
 
-@router.post("/change-role", dependencies=[Depends(UserRole.admin)])
+@router.post("/change-role", dependencies=[Depends(AuthService.get_current_user),
+                                           Depends(UserRole.admin)])
 async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     """
     The change_user_role function changes the role of a user.
@@ -169,4 +170,4 @@ async def change_user_role(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await repository_users.get_user_by_id(user_id, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return await repository_users.update_user(user_id, db)
+    return await repository_users.user_update_role(user_id, db)

@@ -226,12 +226,18 @@ async def update_user_profile(user_id: int, body: ProfileUpdate, db: AsyncSessio
     return user
 
 
-async def update_user(user_id: int, db: AsyncSession):
+async def user_update_role(user_id: int, db: AsyncSession):
+
     """
-    The update_user function updates the role of a user in the database.
-    :param user_id: int: Specify the user id to update
+    The user_update_role function updates the role of a user in the database.
+        Args:
+            user_id (int): The id of the user to update.
+            db (AsyncSession): An async session object for querying and updating data in an asynchronous manner.
+
+    :param user_id: int: Identify the user
     :param db: AsyncSession: Pass the database session to the function
-    :return: A dictionary with a message key
+    :return: A user object with the updated role
+    :doc-author: Trelent
     """
     user = await db.scalar(
         update(User)
