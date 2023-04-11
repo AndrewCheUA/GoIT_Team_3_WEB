@@ -97,7 +97,6 @@ async def get_comment(
     return comment
 
 
-# TODO лише модератор може редагувати комантар, чи власник також?
 @router.put("/", response_model=CommentPublic,
             dependencies=[Depends(UserRoleFilter(role=UserRole.moderator))])
 async def update_comment(

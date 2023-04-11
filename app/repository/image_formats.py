@@ -53,7 +53,14 @@ async def get_image_formats_by_image_id(user_id: int, image_id: int, db: AsyncSe
 
 
 async def get_image_format_by_id(image_format_id: int, db: AsyncSession) -> Image:
+    """
+    The get_image_format_by_id function returns an ImageFormat object from the database.
+
+    :param image_format_id: int: Get the image format by id
+    :param db: AsyncSession: Pass in the database session to the function
+    :return: A single imageformat object
+    """
     return await db.scalar(
-        select(ImageFormat)
-        .filter(ImageFormat.id == image_format_id)
-    )
+            select(ImageFormat)
+            .filter(ImageFormat.id == image_format_id)
+        )

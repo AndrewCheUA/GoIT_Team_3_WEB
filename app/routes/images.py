@@ -13,7 +13,6 @@ from app.services import cloudinary
 from app.services.auth import get_current_active_user
 from .docs import images as docs
 
-
 router = APIRouter(prefix="/images", tags=["Images"])
 
 
@@ -155,15 +154,13 @@ async def delete_image(
         current_user: User = Depends(get_current_active_user)
 ) -> Any:
     """
-    The delete_image function deletes an image from the database.
-        Args:
-            image_id (int): The id of the image to be deleted.
-            db (AsyncSession, optional): An async session with a database connection. Defaults to Depends(get_db).
+    The delete_image function deletes an image from the database and cloudinary.
 
-    :param image_id: int: Get the image by id
+    :param image_id: int: Get the image id from the url
     :param db: AsyncSession: Get the database session
-    :param current_user: User: Get the current user
-    :return: The deleted image
+    :param current_user: User: Get the current user from the database
+
+    :return: A dictionary with a message
     """
     image = await repository_images.get_image_by_id(image_id, db)
 

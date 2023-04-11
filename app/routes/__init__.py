@@ -7,11 +7,13 @@ from . import image_formats
 from . import image_comments
 from . import image_ratings
 from . import tags
+from . import project_documetation
 
 
 
 router = APIRouter()
 
+router.include_router(project_documetation.router)
 router.include_router(auth.router)
 router.include_router(users.router)
 router.include_router(images.router)
