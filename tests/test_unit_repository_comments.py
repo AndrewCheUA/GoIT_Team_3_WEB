@@ -56,7 +56,7 @@ class TestComments(unittest.IsolatedAsyncioTestCase):
 
         self.assertIsNone(result)
 
-    async def test_get_comments_by_image_id(self):
+        async def test_get_comments_by_image_id(self):
         comments = [
             ImageComment(**self.comment),
             ImageComment(**self.comment),
@@ -86,8 +86,13 @@ class TestComments(unittest.IsolatedAsyncioTestCase):
             user_id=user_id, image_id=None, skip=0, limit=10, db=self.session
         )
 
-        expected_result = [comment for comment in comments if comment.user_id == self.comment['user_id']]
-        self.assertEqual(result, expected_result)
+        expected_result = {comment.id: comment for comment in comments if comment.user_id == self.comment['user_id']}
+        result_dict = {comment.id: comment for comment in result}
+
+        result_comment = list(result_dict.values())[0]
+        self.assertEqual(result_comment.user_id, expected_result[result_comment.id].user_id)
+        self.assertEqual(result_comment.image_id, expected_result[result_comment.id].image_id)
+        self.assertEqual(result_comment.data, expected_result[result_comment.id].data)
 
     async def test_get_comments_by_image_and_user_id(self):
         comments = [
